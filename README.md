@@ -10,7 +10,7 @@ The RN RIYO CLI is a development tools for react native app development easily.
   - At the time of generating new screen, it's autometically imported to the navigation configurtion file
   - At the time of generating new screen a style file aslo be generate and this will import to this screen with some common code
   - Developer can aslo generate just only single component, style and service as per requirment with this CLI to maintain standard project structure
-  - Lastly, using this CLI developer can save their time for creating a new application
+  - Lastly, using this CLI, developer can save their time for creating a new application
 
 
 
