@@ -36,7 +36,7 @@ react-native init myApp
 ```
 STEP-2
 ```sh
-rn-riyo generate-structure tabbar or rn-riyo g-structure tabbar
+rn-riyo generate-structure tabbar
 ```
 STEP-3
 ```sh
