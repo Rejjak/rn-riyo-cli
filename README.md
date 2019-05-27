@@ -43,7 +43,7 @@ STEP-3
 react-native run-android or react-native run-ios
 ```
 
-### Powerfull commands
+### Some powerfull commands
 
 Generating new screen
 ```sh
@@ -61,7 +61,7 @@ Generating keystore file and place this file to specfic folder and edited some f
 ```sh
 rn-riyo g-keystore-file
 ```
-For more commands:
+### More commands:
 ```sh
 rn-riyo --help
 ```
