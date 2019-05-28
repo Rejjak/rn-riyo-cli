@@ -1,4 +1,4 @@
-# RN RIYO CL
+# RN RIYO CLI
 
 The RN RIYO CLI is a development tools for react native app development easily.
 # Features!
@@ -16,7 +16,7 @@ The RN RIYO CLI is a development tools for react native app development easily.
 
 ### Installation
 
-RN CLI requires [Node.js](https://nodejs.org/) v8+ and [React Native](https://facebook.github.io/react-native/docs/getting-started) to run perfectly and aslo need `JDK` and `SDK`.
+RN RIYO CLI requires [Node.js](https://nodejs.org/) v8+ and [React Native](https://facebook.github.io/react-native/docs/getting-started) to run perfectly and aslo need `JDK` and `SDK`.
 
 
 Install the CLI with the following command.
@@ -61,7 +61,7 @@ Generating keystore file and place this file to specfic folder and edited some f
 ```sh
 rn-riyo g-keystore-file
 ```
-### More commands:
+### For command usage and a list of options:
 ```sh
 rn-riyo --help
 ```
