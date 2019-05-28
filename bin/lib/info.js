@@ -24,8 +24,7 @@ rnriyoInfo.getVersion = function(process){
         console.log('\nRN RIYO CLI: '+pkg.version);
         console.log('\n--------------------------------------------------');
         console.log('Author                 :   '+pkg.author['name']);
-        console.log('Email                  :   '+pkg.author['email']);
-        console.log('LinkedIn               :   '+pkg.author['linkedin']+'\n');
+        console.log('Email                  :   '+pkg.author['email']+'\n');
         process.exit(0);
     });
 }
