@@ -1,7 +1,7 @@
 const https = require('https');
 const { exec } = require('child_process');
 module.exports = function(callback){
-  exec('npm view jio-queryfff', (err, stdout, stderr) => {
+  exec('npm view rn-riyo', (err, stdout, stderr) => {
     if (err) {
       callback('error');
       return;
