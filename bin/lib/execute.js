@@ -192,19 +192,74 @@ execute.askForUpdate = function(callback){
     console.log(colors.yellow('[WARNING]')+': The RN RIYO CLI has an update available!');
     inquirer.prompt({ type: 'confirm', name: 'input', message: 'Would you like to install it?', default: false }).then(function (answers) {
         if(answers.input){
-            spinner.start();
-            spinner.color = 'yellow';
-            spinner.text = 'Updating, please wait..!';
-            exec(npmpackage[6].cmd, (err, stdout, stderr) => {
-                if (err) {
-                    callback(false);
-                    spinner.stop();
-                    return;
-                }else{
-                    spinner.succeed('RN RIYO CLI has been updated!');
-                    callback(true);
+            let spawnOpts = {
+                'win32':{
+                    stdio: 'inherit',
+                    stdin: 'inherit',
+                    shell: true
+                },
+                'others':{
+                    stdio: 'inherit',
+                    stdin: 'inherit',
                 }
-            }); 
+            };
+
+            let command = {
+                'freebsd':{
+                    cmd:'sudo npm install -g rn-riyo',
+                    first_arg:function(){
+                        return 'sh';
+                    },
+                    sec_arg:function(){
+                        return ['-c',this.cmd];
+                    },
+                    third_arg:spawnOpts.others
+                },
+                'darwin'    :   {
+                    cmd:'sudo npm install -g rn-riyo',
+                    first_arg:function(){
+                        return 'sh';
+                    },
+                    sec_arg:function(){
+                        return ['-c',this.cmd];
+                    },
+                    third_arg:spawnOpts.others
+                },
+                'linux'     :   {
+                    cmd:'sudo npm install -g rn-riyo',
+                    first_arg:function(){
+                        return 'sh';
+                    },
+                    sec_arg:function(){
+                        return ['-c',this.cmd];
+                    },
+                    third_arg:spawnOpts.others
+                },
+                'sunos'     :   {
+                    cmd:'sudo npm install -g rn-riyo',
+                    first_arg:function(){
+                        return 'sh';
+                    },
+                    sec_arg:function(){
+                        return ['-c',this.cmd];
+                    },
+                    third_arg:spawnOpts.others
+                },
+                'win32'     :   {
+                    cmd:'npm install -g rn-riyo',
+                    first_arg:function(){
+                        return this.cmd;
+                    },
+                    sec_arg:function(){
+                        return [];
+                    },
+                    third_arg:spawnOpts.win32
+                }
+            };
+
+            let finalCommand = command[process.platform];
+            spawnSync(finalCommand.first_arg(), finalCommand.sec_arg(), finalCommand.third_arg);
+            callback(true);
         }else{
             callback(false);
         }
