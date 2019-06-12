@@ -61,11 +61,12 @@ Generating keystore file and place this file to specfic folder and edited some f
 ```sh
 rn-riyo g-keystore-file
 ```
-### For command usage and a list of options:
+### For more command usage:
 ```sh
 rn-riyo --help
 ```
 
+Note: I am sorry to say you that there was a problem with version of 1.0.0 to 1.0.4. If your are using oldest version, please uninstall it and re-install latest version again.
 
 
 **Lets chill dude, happy coding!**

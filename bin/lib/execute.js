@@ -40,9 +40,9 @@ execute.dependentcies = function(dir){
 
         if(fs.existsSync('src/')){
             if(fs.existsSync('./App.js')){
-                console.log(colors.yellow('[WARNING]')+': found `src` folder & `App.js` file, by doing this it will be permanently delete and there is no undo option!');
+                console.log(colors.yellow('[WARNING]')+': found `src` folder & `App.js` file, by doing this it will be permanently delete and will re-generate again as per riyo structure!');
             }else{
-                console.log(colors.yellow('[WARNING]')+': found `src` folder, by doing this it will be permanently delete and and there is no undo option!');
+                console.log(colors.yellow('[WARNING]')+': found `src` folder, by doing this it will be permanently delete and will re-generate again as per riyo structure!');
             }
             inquirer.prompt({ type: 'confirm', name: 'input', message: 'Do you want to continue?', default: false }).then(function (answers) {
                 if(answers.input){
@@ -76,7 +76,7 @@ execute.dependentcies = function(dir){
             });
         }else{
             if(fs.existsSync('./App.js')){
-                console.log(colors.yellow('[WARNING]')+': found `App.js` file, by doing this it will be permanently delete and and there is no undo option!');
+                console.log(colors.yellow('[WARNING]')+': found `App.js` file, by doing this it will be permanently delete and will re-generate again as per riyo structure!');
                 inquirer.prompt({ type: 'confirm', name: 'input', message: 'Do you want to continue?', default: false }).then(function (answers) {
                     if(answers.input){
                         let des = 'src';
@@ -190,76 +190,22 @@ execute.tempData = function(dir){
 }
 execute.askForUpdate = function(callback){
     console.log(colors.yellow('[WARNING]')+': The RN RIYO CLI has an update available!');
-    inquirer.prompt({ type: 'confirm', name: 'input', message: 'Would you like to install it?', default: false }).then(function (answers) {
+    inquirer.prompt({ type: 'confirm', name: 'input', message: 'Would you like to update it?', default: false }).then(function (answers) {
         if(answers.input){
-            let spawnOpts = {
-                'win32':{
-                    stdio: 'inherit',
-                    stdin: 'inherit',
-                    shell: true
-                },
-                'others':{
-                    stdio: 'inherit',
-                    stdin: 'inherit',
+            spinner.start();
+            spinner.color = 'yellow';
+            spinner.text = 'Updating, please wait..!';
+            exec(npmpackage[5].cmd, (err, stdout, stderr) => {
+                if (err) {
+                    console.log(colors.red('[ERROR]')+': Faild to update, you can update it menually!');
+                    callback(false);
+                    spinner.stop();
+                    return;
+                }else{
+                    spinner.succeed('RN RIYO CLI has been updated!');
+                    callback(true);
                 }
-            };
-
-            let command = {
-                'freebsd':{
-                    cmd:'sudo npm install -g rn-riyo',
-                    first_arg:function(){
-                        return 'sh';
-                    },
-                    sec_arg:function(){
-                        return ['-c',this.cmd];
-                    },
-                    third_arg:spawnOpts.others
-                },
-                'darwin'    :   {
-                    cmd:'sudo npm install -g rn-riyo',
-                    first_arg:function(){
-                        return 'sh';
-                    },
-                    sec_arg:function(){
-                        return ['-c',this.cmd];
-                    },
-                    third_arg:spawnOpts.others
-                },
-                'linux'     :   {
-                    cmd:'sudo npm install -g rn-riyo',
-                    first_arg:function(){
-                        return 'sh';
-                    },
-                    sec_arg:function(){
-                        return ['-c',this.cmd];
-                    },
-                    third_arg:spawnOpts.others
-                },
-                'sunos'     :   {
-                    cmd:'sudo npm install -g rn-riyo',
-                    first_arg:function(){
-                        return 'sh';
-                    },
-                    sec_arg:function(){
-                        return ['-c',this.cmd];
-                    },
-                    third_arg:spawnOpts.others
-                },
-                'win32'     :   {
-                    cmd:'npm install -g rn-riyo',
-                    first_arg:function(){
-                        return this.cmd;
-                    },
-                    sec_arg:function(){
-                        return [];
-                    },
-                    third_arg:spawnOpts.win32
-                }
-            };
-
-            let finalCommand = command[process.platform];
-            spawnSync(finalCommand.first_arg(), finalCommand.sec_arg(), finalCommand.third_arg);
-            callback(true);
+            }); 
         }else{
             callback(false);
         }
