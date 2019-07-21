@@ -1,6 +1,7 @@
 # RN RIYO CLI
+![riyo_riyo](https://user-images.githubusercontent.com/19728368/61596780-6fbdfc00-ac25-11e9-9893-e30d7c4c52f2.png)
 
-The RN RIYO CLI is a development tools for react native app development easily.
+The RN RIYO CLI is a development tool for react native app development.
 # Features!
 
   - Generating standard project structure with respect to type i.e, `sidebar`,`tabbar` and `basic`
@@ -27,8 +28,7 @@ npm install -g rn-riyo
 
 
 ### How to use?
-
-At the time of creating a new project, please generate a project structure with this CLI, just beacuse of maintain the best project structure till finished your app completly.Please follow the below steps--
+If your system already setup, please follow the below steps
 
 STEP-1
 ```sh
@@ -36,9 +36,13 @@ react-native init myApp
 ```
 STEP-2
 ```sh
-rn-riyo g-structure tabbar
+cd myApp
 ```
 STEP-3
+```sh
+rn-riyo g-structure tabbar
+```
+STEP-4
 ```sh
 react-native run-android or react-native run-ios
 ```
@@ -66,7 +70,9 @@ rn-riyo g-keystore-file
 rn-riyo --help
 ```
 
-Note: I am sorry to say you that there was a problem with version of 1.0.0 to 1.0.4. If your are using oldest version, please uninstall it and re-install latest version again.
+Note: I am sorry to say you that there was a minor problem with version 1.0.0 to 1.0.4. If your are currently using oldest version, please uninstall it and re-install latest version again.
+
+In the latest version I have add a new functionality to display a message if new version is available of the CLI.
 
 
 **Lets chill dude, happy coding!**
