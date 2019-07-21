@@ -4,14 +4,14 @@
 The RN RIYO CLI is a development tool for react native app development.
 # Features!
 
-  - Generating standard project structure with respect to type i.e, `sidebar`,`tabbar` and `basic`
-  - Best rounting configuration implemented that developer can understand easily
-  - Managing application package name and app name easily through this CLI that developer can change their android package name and App name without go to any specific file
-  - Generating keystore file and place this file in where its need be and edit some files with this keystore information
+  - Generating standard project structure and navigation with respect to type i.e, `sidebar`,`tabbar` and `basic`
+  - Best rounting configuration implemented over there
+  - Managing application package name and app name easily using this CLI that developer can change their android package name and App name without go to any specific file
+  - Generating keystore file, after generating this file, it will autometically configure as react native process.You no need to change menually
   - At the time of generating new screen, it's autometically imported to the navigation configurtion file
   - At the time of generating new screen a style file aslo be generate and this will import to this screen with some common code
-  - Developer can aslo generate a single file, i.e., component, style and service as per requirment with this CLI
-  - Lastly, using this CLI, developer can save their time for creating a new application
+  - Developer can aslo generate a single file, i.e., component, style and service as per requirment
+  - Lastly, using this CLI, developer can save their time for creating a new application and maintain best project structure
 
 
 
@@ -28,7 +28,7 @@ npm install -g rn-riyo
 
 
 ### How to use?
-If your system already setup, please follow the below steps
+If your system already have setup, then follow the below steps
 
 STEP-1
 ```sh
@@ -61,7 +61,7 @@ Generating new component
 ```sh
 rn-riyo g-component myComponent
 ```
-Generating keystore file and place this file to specfic folder and edited some files
+Generating keystore file
 ```sh
 rn-riyo g-keystore-file
 ```
@@ -72,7 +72,7 @@ rn-riyo --help
 
 Note: I am sorry to say you that there was a minor problem with version 1.0.0 to 1.0.4. If your are currently using oldest version, please uninstall it and re-install latest version again.
 
-In the latest version I have add a new functionality to display a message if new version is available of the CLI.
+In the latest version I have added a new functionality to display a message if new version is available of the CLI.
 
 
 **Lets chill dude, happy coding!**
