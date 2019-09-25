@@ -188,24 +188,69 @@ execute.tempData = function(dir){
         });
     }
 }
-execute.askForUpdate = function(callback){
+execute.askForUpdate = function(oldV,newV,callback){
     console.log(colors.yellow('[WARNING]')+': The RN RIYO CLI has an update available!');
+    console.log("\t-----------------------------------------");
+    console.log("\t|\t\t\t\t\t|");
+    console.log("\t|\tCurrent Version:- "+oldV+'\t\t|');
+    console.log("\t|\t"+colors.green('New Version:- '+newV.trim())+'\t\t|');
+    console.log("\t|\t\t\t\t\t|");
+    console.log("\t-----------------------------------------");
+    
     inquirer.prompt({ type: 'confirm', name: 'input', message: 'Would you like to update it?', default: false }).then(function (answers) {
         if(answers.input){
-            spinner.start();
-            spinner.color = 'yellow';
-            spinner.text = 'Updating, please wait..!';
-            exec(npmpackage[5].cmd, (err, stdout, stderr) => {
-                if (err) {
-                    console.log(colors.red('[ERROR]')+': Faild to update, you can update it menually!');
-                    callback(false);
-                    spinner.stop();
-                    return;
-                }else{
-                    spinner.succeed('RN RIYO CLI has been updated!');
-                    callback(true);
-                }
-            }); 
+            if(process.platform == 'win32'){
+                spinner.color = 'yellow';
+                spinner.text = 'Updating, please wait..!';
+                spinner.start();
+                exec(npmpackage[5].cmd, (err, stdout, stderr) => {
+                    if (err) {
+                        spinner.stop();
+                        spinner.text = '';
+                        console.log(colors.red('[ERROR]')+': Faild to update, you can update it menually!');
+                        callback(false);
+                        return;
+                    }else{
+                        spinner.succeed('RN RIYO CLI has been updated!');
+                        callback(true);
+                    }
+                }); 
+            }else{
+                exec('sudo -h', (err, stdout, stderr) => {
+                    if (err) {
+                      console.error(err);
+                      return;
+                    }
+                    let text_res_first = stdout.toString().indexOf('Sorry');
+                    let text_res_sec = stdout.toString().indexOf('sorry');
+                    if(text_res_first == -1 || text_res_sec == -1){
+                        let command = cliUpdateCommand();
+                        let tres = spawnSync(command.first_arg(), command.sec_arg(), command.third_arg);
+                        
+                        if (tres.status) {
+                            callback(true);
+                            process.exit(tres.status);
+                            process.exit(0);
+                        }
+                    }else{
+                        spinner.start();
+                        spinner.color = 'yellow';
+                        spinner.text = 'Updating, please wait..!';
+                        exec(npmpackage[5].cmd, (err, stdout, stderr) => {
+                            if (err) {
+                                spinner.stop();
+                                spinner.text = '';
+                                console.log(colors.red('[ERROR]')+': Faild to update, you can update it menually!');
+                                callback(false);
+                                return;
+                            }else{
+                                spinner.succeed('RN RIYO CLI has been updated!');
+                                callback(true);
+                            }
+                        }); 
+                    }
+                });
+            }
         }else{
             callback(false);
         }
@@ -535,6 +580,74 @@ function finalKeyStoreCommand(keyName,aliasName){
         },
         'win32'     :   {
             cmd:'keytool -genkeypair -v -keystore '+keyName+'.keystore -alias '+aliasName+' -keyalg RSA -keysize 2048 -validity 10000',
+            first_arg:function(){
+                return this.cmd;
+            },
+            sec_arg:function(){
+                return [];
+            },
+            third_arg:spawnOpts.win32
+        }
+    }
+    return command[process.platform];
+}
+
+
+function cliUpdateCommand(){
+    let spawnOpts = {
+        'win32':{
+            stdio: 'inherit',
+            stdin: 'inherit',
+            shell: true
+        },
+        'others':{
+            stdio: 'inherit',
+            stdin: 'inherit',
+        }
+    }
+    let command = {
+        'freebsd':{
+            cmd:'sudo npm install -g rn-riyo',
+            first_arg:function(){
+                return 'sh';
+            },
+            sec_arg:function(){
+                return ['-c',this.cmd];
+            },
+            third_arg:spawnOpts.others
+        },
+        'darwin'    :   {
+            cmd:'sudo npm install -g rn-riyo',
+            first_arg:function(){
+                return 'sh';
+            },
+            sec_arg:function(){
+                return ['-c',this.cmd];
+            },
+            third_arg:spawnOpts.others
+        },
+        'linux'     :   {
+            cmd:'sudo npm install -g rn-riyo',
+            first_arg:function(){
+                return 'sh';
+            },
+            sec_arg:function(){
+                return ['-c',this.cmd];
+            },
+            third_arg:spawnOpts.others
+        },
+        'sunos'     :   {
+            cmd:'sudo npm install -g rn-riyo',
+            first_arg:function(){
+                return 'sh';
+            },
+            sec_arg:function(){
+                return ['-c',this.cmd];
+            },
+            third_arg:spawnOpts.others
+        },
+        'win32'     :   {
+            cmd:'npm install -g rn-riyo',
             first_arg:function(){
                 return this.cmd;
             },
