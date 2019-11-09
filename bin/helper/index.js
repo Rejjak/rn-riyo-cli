@@ -4,10 +4,6 @@ const colors = require('colors');
 const riyohelper = Object.create(null);
 const fsextra = require("fs-extra");
 function ucFirst(value){
-    // value = value.toLowerCase().replace(/\b[a-z]/g, function(letter) {
-    //     return letter.toUpperCase();
-    // });
-    // return value;
     return value.charAt(0).toUpperCase() + value.slice(1);
 }
 riyohelper.checkAndroidFiles = (path,callback)=>{

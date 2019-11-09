@@ -192,6 +192,13 @@ riyoNative.riyoCommander = (riyoprogram,process)=>{
         .action(function (dir) {
             execute.changePackage(dir);
         }); 
+
+    riyoprogram
+        .command('setup-facebook <package>')
+        .description('setup facebook integration for both andoird and ios platform')
+        .action(function (dir) {
+            execute.setupFaceBook(dir);
+        }); 
         
     riyoprogram
         .command('generate-keystore-file')

@@ -262,6 +262,70 @@ execute.changeAppName = function(dir){
     });
 }
 
+execute.setupFaceBook = function(dir){
+    // For android
+    let files = {
+        AndroidManifest    :'android/app/src/main/AndroidManifest.xml',
+        Strings            :'android/app/src/main/res/values/strings.xml'
+    };
+
+    async.waterfall([
+        function(callback){
+            if(
+                fs.existsSync(files.AndroidManifest)
+                &&
+                fs.existsSync(files.Strings)
+            ){
+                fs.readFile(files.AndroidManifest,"utf-8",(err,data)=>{
+                    let str = data;
+                    let start_pos = str.lastIndexOf('android:theme="@style/AppTheme">')+32;
+                    let isExist = str.lastIndexOf('com.facebook.sdk.ApplicationId');
+                    if(isExist == -1){
+                        fs.readFile(files.AndroidManifest,"utf-8",(fileerr,filedata)=>{
+                            let fileStr = filedata;
+                            let updateStr = '\n\t\t\t<meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id"/>';
+                            let result = fileStr.splice(start_pos, 0,updateStr);
+                            fs.writeFile(files.AndroidManifest,result,function(err){
+                                if(err){
+                                    console.log(colors.red(err));
+                                    return false;
+                                }
+                                fs.readFile(files.Strings,"utf-8",(fileerr,filedata)=>{
+                                    let fileStr = filedata;
+                                    let start_pos = fileStr.lastIndexOf('</string>')+9;
+                                    if(fileStr.lastIndexOf('</string>') == -1){
+                                         callback('\nInvalid file,please check your string.xml file',true);
+                                    }else{
+                                        let updateStr = '\n\t<string name="facebook_app_id">'+dir+'</string>';
+                                        let result = fileStr.splice(start_pos, 0,updateStr);
+                                        fs.writeFile(files.Strings,result,function(err){
+                                            if(err){
+                                                console.log(colors.red(err));
+                                                return false;
+                                            }
+                                        });
+                                        callback(null,true);
+                                    }
+                                })
+                            });
+                        })
+                    }else{
+                        callback('\nFacebook already setup,you can change facebook app id',true);
+                    }
+                })
+                return false;
+            }
+        }
+    ],function(err,result){
+        if(err){
+            console.error(err);
+            return;
+        }
+        console.log('\n'+colors.green('[SUCCESS]')+': Facebook integrated!\n');
+    });
+
+}
+
 execute.changePackage = function(dir){
     let regex = /^[a-z][a-z0-9_]*(\.[a-z0-9_]+)+[0-9a-z_]$/i;
     inquirer.prompt({ type: 'confirm', name: 'input', message: 'Are you sure you want to change?', default: false }).then(function (answers) {

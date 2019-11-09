@@ -10,7 +10,6 @@ const month = date.getMonth()+1;
 const year = date.getFullYear();
 const final_date = day+'/'+month+'/'+year;
 const package = require('./bin/lib/rnriyo/package');
-//const compareVersions = require('compare-versions');
 function compareVersions(v1, comparator, v2) {
     "use strict";
     var comparator = comparator == '=' ? '==' : comparator;
