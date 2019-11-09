@@ -16,8 +16,8 @@ riyoNative.riyoHelp = (riyoprogram,process)=>{
     });
 }
 
-riyoNative.askForUpdate = (callback)=>{
-    execute.askForUpdate(function(data){
+riyoNative.askForUpdate = (oldV,newV,callback)=>{
+    execute.askForUpdate(oldV,newV,function(data){
         callback(data);
     });
 }

@@ -38,12 +38,12 @@ cli.init = ()=> {
 					riyoInit();
 				}else{
 					update(function(newVersion){
-						if(newVersion != 'error'){
+						if(newVersion !== 'error'){
 							package(function(oldVersion){
 								if(compareVersions(newVersion,'==',oldVersion.version)){
 									constDateForADay();
 								}else{
-									riyoNative.askForUpdate(function(result){
+									riyoNative.askForUpdate(oldVersion.version,newVersion,function(result){
 										constDateForADay();
 									});
 								}

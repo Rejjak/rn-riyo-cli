@@ -1,7 +1,7 @@
 {
   "name": "rn-riyo",
-  "version": "1.0.5",
-  "description": "The react native tools for easily setup a new application",
+  "version": "1.0.7",
+  "description": "The react native tools for easily setup for a new application",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
