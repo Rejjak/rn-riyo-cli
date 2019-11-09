@@ -1,6 +1,6 @@
 {
   "name": "rn-riyo",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "The react native tools for easily setup for a new application",
   "main": "index.js",
   "scripts": {
