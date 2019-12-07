@@ -33,5 +33,10 @@ module.exports = [
         name:'Jio-Query',
         cmd:'npm install jio-query --save',
         pos:6
+    },
+    {
+        name:'Facebook Sdk',
+        cmd:'npm install react-native-fbsdk@1.0.4 --save',
+        pos:7
     }
 ]

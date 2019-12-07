@@ -1,10 +1,6 @@
-const program = require('commander');
+const path = require('path')
 const inquirer = require('inquirer');
-const chalk = require('chalk');
-const figlet = require('figlet');
-const clear = require('clear');
 const fs = require('fs');
-const mkdirp = require('mkdirp');
 const colors = require('colors');
 const fsextra = require("fs-extra");
 const { spawn,exec,spawnSync } = require('child_process');
@@ -16,6 +12,7 @@ const ora = require('ora');
 const spinner = ora('');
 const npmpackage = require('../lib/npmPackage');
 const async = require('async');
+const plist = require('plist');
 
 execute.dependentcies = function(dir){
     let temp_location = {
@@ -307,68 +304,404 @@ execute.changeAppName = function(dir){
     });
 }
 
-execute.setupFaceBook = function(dir){
-    // For android
-    let files = {
-        AndroidManifest    :'android/app/src/main/AndroidManifest.xml',
-        Strings            :'android/app/src/main/res/values/strings.xml'
-    };
+function getUnique(array){
+    let uniqueArray = [];
+    for(i=0; i < array.length; i++){
+        if(uniqueArray.indexOf(array[i]) === -1) {
+            uniqueArray.push(array[i]);
+        }
+    }
+    return uniqueArray;
+}
 
-    async.waterfall([
-        function(callback){
-            if(
-                fs.existsSync(files.AndroidManifest)
-                &&
-                fs.existsSync(files.Strings)
-            ){
-                fs.readFile(files.AndroidManifest,"utf-8",(err,data)=>{
-                    let str = data;
-                    let start_pos = str.lastIndexOf('android:theme="@style/AppTheme">')+32;
-                    let isExist = str.lastIndexOf('com.facebook.sdk.ApplicationId');
-                    if(isExist == -1){
-                        fs.readFile(files.AndroidManifest,"utf-8",(fileerr,filedata)=>{
-                            let fileStr = filedata;
-                            let updateStr = '\n\t\t\t<meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id"/>';
-                            let result = fileStr.splice(start_pos, 0,updateStr);
-                            fs.writeFile(files.AndroidManifest,result,function(err){
-                                if(err){
-                                    console.log(colors.red(err));
-                                    return false;
-                                }
+execute.changeFaceBookAppId = function(dir){
+    let plistPath = fromDir('ios/','Info.plist');
+    let stringPath = fromDir('android/app/src/main/res/values/','strings.xml');
+    let platforms = [];
+    if(plistPath !== undefined || stringPath !== undefined){
+        let content = [];
+        if(fs.existsSync(plistPath)){
+            let iosObj = plist.parse(fs.readFileSync(plistPath, 'utf8'));
+            if(iosObj.FacebookAppID !== undefined){
+                let urltypes = iosObj.CFBundleURLTypes;
+                let index = urltypes.findIndex(x => x.CFBundleURLSchemes);
+                let nextArr = urltypes[index].CFBundleURLSchemes;
+                if(urltypes.length>0){
+                    nextArr.forEach((ele,i)=>{
+                        if(ele.indexOf('fb') != -1){
+                            nextArr[i] = 'fb'+dir;
+                        }
+                    });
+                }
+                nextArr.push('fb'+dir);
+                iosObj.CFBundleURLTypes[index].CFBundleURLSchemes = getUnique(nextArr);
+                iosObj.FacebookAppID = dir;
+                content.push({
+                    file:plistPath,
+                    data:plist.build(iosObj)
+                });
+                platforms.push('iOs');
+            }else{
+                console.log('\n'+colors.yellow('[WARNING]')+': Facebook integration not found in iOs,so there was nothing to change!\n');
+            }
+        }
+
+
+        if(fs.existsSync(stringPath)){
+            let andData = fs.readFileSync(stringPath, 'utf8');
+            let check = andData.indexOf('facebook_app_id');
+            if(check !== -1){
+                let start_pos = andData.lastIndexOf('"facebook_app_id">')+18;
+                let next_str = andData.substr(start_pos,100);
+                let last_pos = next_str.indexOf('</string>');
+                let app_id = andData.substr(start_pos,last_pos);
+                let update_str = andData.replace(app_id,dir);
+                content.push({
+                    file:stringPath,
+                    data:update_str
+                });
+                platforms.push('Android');
+            }else{
+                console.log('\n'+colors.yellow('[WARNING]')+': Facebook integration not found in Android,so there was nothing to change!\n');
+            }
+        }
+
+        if(content.length>0){
+            content.forEach((ele,index)=>{
+                fs.writeFile(ele.file,ele.data,function(err){
+                    if(err){
+                        console.log(colors.red(err));
+                        return false;
+                    }
+                });
+            });
+            let pltfomr = platforms.toString().replace(',',' and ');
+            console.log('\n'+colors.green('[SUCCESS]')+': Facebook app id has been changed for '+pltfomr+'!\n');
+        }
+    }else{
+        console.log('\n'+colors.red('[ERROR]')+': Required files and folders not found!\n');
+    }
+};
+function installFbSdk(callback){
+    let deligatePath = fromDir('ios/','AppDelegate.m');
+    let plist = fromDir('ios/','Info.plist');
+    let mani = fromDir('android/app/src/main/','AndroidManifest.xml');
+    let string = fromDir('android/app/src/main/res/values/','strings.xml');
+    if((deligatePath !== undefined && plist !== undefined) || (mani !== undefined && string !== undefined)){
+        if(fs.existsSync('package.json')){
+            fs.readFile('package.json',"utf-8",(err,data)=>{
+                let isExist = data.lastIndexOf('react-native-fbsdk');
+                if(isExist == -1){
+                    if(process.platform == 'win32'){
+                        spinner.start();
+                        spinner.color = 'yellow';
+                        spinner.text = 'Installing Facebook SDK, please wait..!';
+                        exec(npmpackage[7].cmd, (err, stdout, stderr) => {
+                            if (err) {
+                                spinner.stop();
+                                spinner.text = '';
+                                console.log(colors.red('\n[ERROR]')+': Faild to install.\n');
+                                callback(false);
+                                return;
+                            }else{
+                                spinner.stop();
+                                callback(true);
+                            }
+                        }); 
+                    }else{
+                         exec('sudo -h', (err, stdout, stderr) => {
+                            if (err) {
+                              console.error(err);
+                              return;
+                            }
+                            let text_res_first = stdout.toString().indexOf('Sorry');
+                            let text_res_sec = stdout.toString().indexOf('sorry');
+                            if(text_res_first == -1 || text_res_sec == -1){
+                                let command = fbSdkCommand();
+                                spawnSync(command.first_arg(), command.sec_arg(), command.third_arg);
+                                callback(true);
+                            }else{
+                                spinner.start();
+                                spinner.color = 'yellow';
+                                spinner.text = 'Installing Facebook SDK, please wait..!';
+                                exec(npmpackage[7].cmd, (err, stdout, stderr) => {
+                                    if (err) {
+                                        spinner.stop();
+                                        spinner.text = '';
+                                        console.log(colors.red('\n[ERROR]')+': Faild to install.\n');
+                                        callback(false);
+                                        return;
+                                    }else{
+                                        spinner.stop();
+                                        callback(true);
+                                    }
+                                }); 
+                            }
+                        });
+                    }
+                }else{
+                    callback(true);
+                }
+            });
+        }else{
+            console.log(colors.red('\n[ERROR]')+': package.json file not found\n');
+            callback(false);
+        }
+    }else{
+        console.log(colors.red('\n[ERROR]')+': Required files and folders not found!\n');
+        callback(false);
+    }
+}
+execute.setupFaceBook = function(dir){
+    installFbSdk(function(res){
+        if(res){
+            // For android
+            let files = {
+                AndroidManifest    :'android/app/src/main/AndroidManifest.xml',
+                Strings            :'android/app/src/main/res/values/strings.xml'
+            };
+
+            async.waterfall([
+                function(callback){
+                    if(
+                        fs.existsSync(files.AndroidManifest)
+                        &&
+                        fs.existsSync(files.Strings)
+                    ){
+                        fs.readFile(files.AndroidManifest,"utf-8",(err,data)=>{
+                            let str = data;
+                            let start_pos = str.lastIndexOf('android:theme="@style/AppTheme">')+32;
+                            let isExist = str.lastIndexOf('com.facebook.sdk.ApplicationId');
+                            if(isExist == -1){
+                                let fileStr = str;
+                                let updateStr = "\n\t\t\t<!-- Start_Facebook integration Added by RN-RIYO-CLI -->\n";
+                                updateStr+='\t\t\t<meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id"/>\n';
+                                updateStr+='\t\t\t<!-- END_Facebook integration Added by RN-RIYO-CLI -->';
+                                let resultMenifest = fileStr.splice(start_pos, 0,updateStr);
+                                
                                 fs.readFile(files.Strings,"utf-8",(fileerr,filedata)=>{
                                     let fileStr = filedata;
                                     let start_pos = fileStr.lastIndexOf('</string>')+9;
-                                    if(fileStr.lastIndexOf('</string>') == -1){
-                                         callback('\nInvalid file,please check your string.xml file',true);
+                                    let check_fb_integration = fileStr.indexOf('facebook_app_id');
+                                    if(check_fb_integration == -1){
+                                        if(fileStr.lastIndexOf('</string>') == -1){
+                                            callback('\nInvalid file,please check your string.xml file',true);
+                                        }else{
+                                            let updateStr = "\n\t<!-- Start_Facebook integration Added by RN-RIYO-CLI -->\n";
+                                            updateStr+='\t<string name="facebook_app_id">'+dir+'</string>\n';
+                                            updateStr+='\t<!-- END_Facebook integration Added by RN-RIYO-CLI -->';
+                                            let result = fileStr.splice(start_pos, 0,updateStr);
+                                        
+                                            let finalData = [
+                                                {
+                                                    file: files.AndroidManifest,
+                                                    data:resultMenifest
+                                                },
+                                                {
+                                                    file:files.Strings,
+                                                    data:result
+                                                }
+                                            ];
+                                            callback(null,finalData);
+                                        } 
                                     }else{
-                                        let updateStr = '\n\t<string name="facebook_app_id">'+dir+'</string>';
-                                        let result = fileStr.splice(start_pos, 0,updateStr);
-                                        fs.writeFile(files.Strings,result,function(err){
-                                            if(err){
-                                                console.log(colors.red(err));
-                                                return false;
-                                            }
+                                        callback('Facebook already setup,you can change facebook app id,please check "strings.xml" file',true);
+                                    }
+                                });
+                            }else{
+                                callback('Facebook already setup,you can change facebook app id,please check "AndroidManifest.xml" and "strings.xml" files',true);
+                            }
+                        })
+                        return false;
+                    }else{
+                        callback(null,[]);
+                    }
+                },
+                function(res,callback){
+                    //deligation integration
+                    let finalData = res;
+                    if(fs.existsSync('ios')){
+                        let deligatePath = fromDir('ios/','AppDelegate.m');
+                        if(fs.existsSync(deligatePath)){
+                            fs.readFile(deligatePath,"utf-8",(err,data)=>{
+                                let strr = data;
+            
+                                let header_pos = strr.indexOf('<React/RCTRootView.h>');
+                                let fb_sdk_header = strr.indexOf('<FBSDKCoreKit/FBSDKCoreKit.h>');
+                                let link_header = strr.indexOf('<React/RCTLinkingManager.h>');
+            
+                                if(link_header == -1){
+                                    strr = strr.splice(header_pos+21, 0, '\n//Start_facebook integration by RN-RIYO CLI\n#import <React/RCTLinkingManager.h>\n//END_facebook integration');
+                                }
+            
+                                if(fb_sdk_header == -1){
+                                    strr = strr.splice(header_pos+21, 0, '\n//Start_facebook integration by RN-RIYO CLI\n#import <FBSDKCoreKit/FBSDKCoreKit.h>\n//END_facebook integration\n');
+                                }
+            
+                                let isExist = strr.lastIndexOf('- (BOOL)application:(UIApplication *)app openURL');
+                                let first_start_pos = strr.indexOf('{');
+                                let firstUpdate="\n\t//Start_facebook integration by RN-RIYO CLI\n";
+                                firstUpdate+="\t[[FBSDKApplicationDelegate sharedInstance] application:application\n";
+                                firstUpdate+="\tdidFinishLaunchingWithOptions:launchOptions];\n";
+                                firstUpdate+="\t//END_facebook integration\n";
+                                let firstCheck = strr.indexOf('didFinishLaunchingWithOptions:launchOptions]');
+                                if(firstCheck == -1){
+                                    strr = strr.splice((first_start_pos+1), 0,firstUpdate);
+                                }
+                    
+                                let sec_start_pos = strr.lastIndexOf('@end');
+                                let updatedStr="//Start_facebook integration added by RN-RIYO CLI\n";
+                                updatedStr+="- (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options\n";
+                                updatedStr+="{\n";
+                                updatedStr+="\tif([[FBSDKApplicationDelegate sharedInstance] application:app openURL:url options:options]){\n";
+                                updatedStr+="\t\treturn YES;\n";
+                                updatedStr+="\t}\n";
+                                updatedStr+="\tif([RCTLinkingManager application:app openURL:url options:options]){\n";
+                                updatedStr+="\t\treturn YES;\n";
+                                updatedStr+="\t}\n";
+                                updatedStr+="\treturn NO;\n";
+                                updatedStr+="}\n";
+                                updatedStr+="//END_facebook integration\n\n";
+                                let finalResults=strr.splice(sec_start_pos, 0,updatedStr);
+                                if(isExist == -1){
+                                    let deligateData = {
+                                        file    :   deligatePath,
+                                        data    :   finalResults
+                                    };
+            
+                                    finalData.push(deligateData);
+                                    callback(null,finalData);
+                                }else{
+                                    callback('Setup faild due to method already defined for another functionalities,please check "AppDelegate.m" file',true);
+                                }
+                            })
+                        }else{
+                            callback('May be this is not a react native project, hahaha...ha',true);
+                        }
+                    }else{
+                        callback(null,finalData);
+                    }
+                    
+                },
+                function(res,callback){
+                    //plist integration
+                    let finalData = res;
+                    if(fs.existsSync('ios')){
+                        let plistPath = fromDir('ios/','Info.plist');
+                        if(fs.existsSync(plistPath)){
+                            let obj = plist.parse(fs.readFileSync(plistPath, 'utf8'));
+                            if(obj.FacebookAppID !== undefined){
+                                callback('Facebook already setup,you can change facebook app id,please check "Info.plist" file',true);
+                            }else{
+                                fs.readFile(plistPath,"utf-8",(err,data)=>{
+                                    let strr = data;
+                                    let CFBundleURLTypes = strr.indexOf('<key>CFBundleURLTypes</key>');
+                                    if(CFBundleURLTypes == -1){
+                                        let questionMarkPos = strr.indexOf('<string>????</string>');
+                                        let add_first = '\n\t<!-- Start_Facebook integration added by rn-riyo -->\n';
+                                        add_first+='\t<key>CFBundleURLTypes</key>\n';
+                                        add_first+='\t<array>\n';
+                                        add_first+='\t\t<dict>\n';
+                                        add_first+='\t\t\t<key>CFBundleURLSchemes</key>\n';
+                                        add_first+='\t\t\t<array>\n';
+                                        add_first+='\t\t\t\t<string>fb'+dir+'</string>\n';
+                                        add_first+='\t\t\t</array>\n';
+                                        add_first+='\t\t</dict>\n';
+                                        add_first+='\t</array>\n';
+                                        add_first+='\t<!-- END_Facebook integration added by rn-riyo -->';
+                                        strr = strr.splice(questionMarkPos+21,0,add_first);
+                                    }else{
+                                        let CFBundleURLSchemes = strr.indexOf('<key>CFBundleURLSchemes</key>');
+                                        if(CFBundleURLSchemes != -1){
+                                            let add_first='\n\t\t\t\t<string>fb'+dir+'</string><!-- Start/END_Facebook integration added by rn-riyo -->';
+                                            strr = strr.splice(CFBundleURLSchemes+40,0,add_first);
+                                        }else{
+                                            callback('Invalid file format, please check info.plist file',true);
+                                        }
+                                    }
+                
+                                    let LSRequiresIPhoneOS = strr.indexOf('<key>LSRequiresIPhoneOS</key>');
+                                    if(LSRequiresIPhoneOS != -1){
+                                        let add_sec = '\t<!-- Start_Facebook integration added by rn-riyo -->\n';
+                                        add_sec+='\t<key>FacebookAppID</key>\n';
+                                        add_sec+='\t<string>'+dir+'</string>\n';
+                                        add_sec+='\t<key>FacebookDisplayName</key>\n';
+                                        add_sec+='\t<string>'+obj.CFBundleDisplayName+'</string>\n';
+                                        add_sec+='\t<key>LSApplicationQueriesSchemes</key>\n';
+                                        add_sec+='\t<array>\n';
+                                        add_sec+='\t\t<string>fbapi</string>\n';
+                                        add_sec+='\t\t<string>fb-messenger-share-api</string>\n';
+                                        add_sec+='\t\t<string>fbauth2</string>\n';
+                                        add_sec+='\t\t<string>fbshareextension</string>\n';
+                                        add_sec+='\t</array>\n';
+                                        add_sec+='\t<!-- End_Facebook integration added by rn-riyo -->\n';
+                                        strr = strr.splice(LSRequiresIPhoneOS,0,add_sec);
+                                    }
+                                    //console.log(obj.CFBundleDisplayName);
+                                    let plistData = {
+                                        file:plistPath,
+                                        data:strr
+                                    }
+                                    finalData.push(plistData);
+                                    if(finalData.length>0){
+                                        finalData.forEach((ele,index)=>{
+                                            fs.writeFile(ele.file,ele.data,function(err){
+                                                if(err){
+                                                    console.log(colors.red(err));
+                                                    return false;
+                                                }
+                                            });
                                         });
                                         callback(null,true);
-                                    }
+                                    }else{
+                                        callback('Files or folder not found!!',true);
+                                    } 
                                 })
-                            });
-                        })
+                            }
+                        }else{
+                            callback('This is not your react native project',true);
+                        }
                     }else{
-                        callback('\nFacebook already setup,you can change facebook app id',true);
+                        if(finalData.length>0){
+                            finalData.forEach((ele,index)=>{
+                                fs.writeFile(ele.file,ele.data,function(err){
+                                    if(err){
+                                        console.log(colors.red(err));
+                                        return false;
+                                    }
+                                });
+                            });
+                            callback(null,true);
+                        }else{
+                            callback('Files or folder not found!!',true);
+                        }
                     }
-                })
-                return false;
-            }
-        }
-    ],function(err,result){
-        if(err){
-            console.error(err);
-            return;
-        }
-        console.log('\n'+colors.green('[SUCCESS]')+': Facebook integrated!\n');
-    });
+                }
+            ],function(err,result){
+                if(err){
+                    console.error('\n'+colors.red('[ERROR]')+': '+err+'\n');
+                    return;
+                }
+                console.log('\n'+colors.green('[SUCCESS]')+': Facebook integrated successfully..!\n');
+                console.log('Note: \n(i) if you are using pod, then please run the command "pod install" into your ios folder for ios only.\n(ii) For example please check your project directory.\n(iii) For more example please go through on "react-native-fbsdk" npm.\n');
 
+                dir = './';
+                exec('npm root -g', (err, stdout, stderr) => {
+                    if (err) {
+                    console.error(err);
+                    return;
+                    }
+                    let src = stdout.replace('\n','')+'/rn-riyo/test/fb';
+                    fsextra.copy(src,dir, function (err) {
+                        if (err){
+                            console.log('Please report to developer')
+                            return console.error(err)
+                        }
+                    });
+                });
+            });
+        }
+    });
 }
 
 execute.changePackage = function(dir){
@@ -430,16 +763,6 @@ execute.changePackage = function(dir){
                                 return;
                             }
                             console.log('\n'+colors.green('[SUCCESS]')+': application package name has been changed!\n');
-                            // if(fs.existsSync('android')){
-                            //     const spawnOpts = {
-                            //         stdio: 'inherit',
-                            //         stdin: 'inherit',
-                            //       };
-                            //     let tres = spawnSync('react-native', ['upgrade', ''], spawnOpts)
-                            //     if (tres.status) {
-                            //         process.exit(tres.status);
-                            //     }
-                            // }
                         });
                     }
                 }else{
@@ -656,6 +979,95 @@ function finalKeyStoreCommand(keyName,aliasName){
     return command[process.platform];
 }
 
+let byPassValue = ''; 
+function fromDir(startPath,filter){
+    if (!fs.existsSync(startPath)){
+        return;
+    }
+
+    let files=fs.readdirSync(startPath);
+    for(let i=0;i<files.length;i++){
+        let filename=path.join(startPath,files[i]);
+        let stat = fs.lstatSync(filename);
+        if (stat.isDirectory()){
+            fromDir(filename,filter);
+        }
+        else if (filename.indexOf(filter)>=0) {
+            byPassValue = filename;
+        }
+    }
+
+    if(byPassValue !== ''){
+        return byPassValue;
+    }
+}
+
+function fbSdkCommand(){
+    let spawnOpts = {
+        'win32':{
+            stdio: 'inherit',
+            stdin: 'inherit',
+            shell: true
+        },
+        'others':{
+            stdio: 'inherit',
+            stdin: 'inherit',
+        }
+    }
+    let command = {
+        'freebsd':{
+            cmd:'sudo npm install react-native-fbsdk@1.0.4 --save',
+            first_arg:function(){
+                return 'sh';
+            },
+            sec_arg:function(){
+                return ['-c',this.cmd];
+            },
+            third_arg:spawnOpts.others
+        },
+        'darwin'    :   {
+            cmd:'sudo npm install react-native-fbsdk@1.0.4 --save',
+            first_arg:function(){
+                return 'sh';
+            },
+            sec_arg:function(){
+                return ['-c',this.cmd];
+            },
+            third_arg:spawnOpts.others
+        },
+        'linux'     :   {
+            cmd:'sudo npm install react-native-fbsdk@1.0.4 --save',
+            first_arg:function(){
+                return 'sh';
+            },
+            sec_arg:function(){
+                return ['-c',this.cmd];
+            },
+            third_arg:spawnOpts.others
+        },
+        'sunos'     :   {
+            cmd:'sudo npm install react-native-fbsdk@1.0.4 --save',
+            first_arg:function(){
+                return 'sh';
+            },
+            sec_arg:function(){
+                return ['-c',this.cmd];
+            },
+            third_arg:spawnOpts.others
+        },
+        'win32'     :   {
+            cmd:'npm install react-native-fbsdk@1.0.4 --save',
+            first_arg:function(){
+                return this.cmd;
+            },
+            sec_arg:function(){
+                return [];
+            },
+            third_arg:spawnOpts.win32
+        }
+    }
+    return command[process.platform];
+}
 
 function cliUpdateCommand(){
     let spawnOpts = {
@@ -727,4 +1139,9 @@ function cliUpdateCommand(){
 String.prototype.splice = function(idx, rem, str) {
     return this.slice(0, idx) + str + this.slice(idx + Math.abs(rem));
 };
+
+String.prototype.replaceBetween = function(start, end, what) {
+    return this.substring(0, start) + what + this.substring(end);
+};
+
 module.exports = execute;

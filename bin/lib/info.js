@@ -14,6 +14,7 @@ rnriyoInfo.userHelp = function(process){
     console.log('   change-app-name [app name]                      change application name');
     console.log('   generate-keystore-file|g-keystore-file          generate keystore file and settings up for project');
     console.log('   generate-apk|g-apk                              generate signin apk file');
+    console.log('   setup-facebook [appid]                          Setup facebook integration with react-native-fbsdk flugin');
     console.log('   generate-structure [type]|g-structure [type]    generate project structure with`sidebar`,`tabbar` or `basic` type\n');
     process.exit(0);
 }

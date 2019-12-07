@@ -13,7 +13,12 @@ The RN RIYO CLI is a development tool for react native app development.
   - Developer can aslo generate a single file, i.e., component, style and service as per requirment
   - Lastly, using this CLI, developer can save their time for creating a new application and maintain best project structure
 
+# What's new in the latest version!
+- Added facebook integration functionalities with a single command. In this command you can easily setup your facebook integration for both platforms(Android,iOs) if exists. You no need follow the documention for facebook integration, all the guide will provide this CLI, there will be generate a demo example for you in your project directory after running this command.
 
+```sh
+rn-riyo setup-facebook your_facebook_app_id
+```
 
 ### Installation
 

@@ -194,10 +194,17 @@ riyoNative.riyoCommander = (riyoprogram,process)=>{
         }); 
 
     riyoprogram
-        .command('setup-facebook <package>')
+        .command('setup-facebook <appid>')
         .description('setup facebook integration for both andoird and ios platform')
         .action(function (dir) {
             execute.setupFaceBook(dir);
+        }); 
+
+    riyoprogram
+        .command('change-facebook-appid <appid>')
+        .description('change facebook app id')
+        .action(function (dir) {
+            execute.changeFaceBookAppId(dir);
         }); 
         
     riyoprogram
