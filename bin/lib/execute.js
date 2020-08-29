@@ -722,6 +722,17 @@ execute.changePackage = function(dir){
                             MainApplication :nextPath+'/MainApplication.java',
                             BuildGradle     :'android/app/build.gradle'
                         };
+                        const directoryPath = nextPath;
+                        fs.readdir(nextPath, function (err, filess) {
+                            //handling error
+                            if (err) {
+                                return console.log('Unable to scan directory: ' + err);
+                            } 
+                            //listing all files using forEach
+                            filess.forEach(function (file,index) {
+                                files['RiyoFiles_'+index] = nextPath+'/'+file;
+                            });
+                        });
                         async.waterfall([
                             function(callback){
                                 if(
