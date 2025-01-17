@@ -1,20 +1,21 @@
 # RN RIYO CLI
 ![riyo_riyo](https://user-images.githubusercontent.com/19728368/61596780-6fbdfc00-ac25-11e9-9893-e30d7c4c52f2.png)
 
-The RN RIYO CLI is a development tool for react native app development.
-# Features!
+RN RIYO CLI is a development tool for React Native app development.
 
-  - Generating standard project structure and navigation with respect to type i.e, `sidebar`,`tabbar` and `basic`
-  - Best rounting configuration implemented over there
-  - Managing application package name and app name easily using this CLI that developer can change their android package name and App name without go to any specific file
-  - Generating keystore file, after generating this file, it will autometically configure as react native process.You no need to change menually
-  - At the time of generating new screen, it's autometically imported to the navigation configurtion file
-  - At the time of generating new screen a style file aslo be generate and this will import to this screen with some common code
-  - Developer can aslo generate a single file, i.e., component, style and service as per requirment
-  - Lastly, using this CLI, developer can save their time for creating a new application and maintain best project structure
+# Features
 
-# What's new in the latest version!
-- Added facebook integration functionalities with a single command. In this command you can easily setup your facebook integration for both platforms(Android,iOs) if exists. You no need to follow the documention for facebook integration, all the guide will provide this CLI, there will be generate a demo example for you in your project directory after running this command.
+- Generates standard project structure and navigation based on type: `sidebar`, `tabbar`, or `basic`.
+- Implements optimized routing configuration.
+- Easily manage application package name and app name. Developers can change the Android package name and app name without modifying specific files.
+- Generates a keystore file and automatically configures it with React Native. No manual changes needed.
+- Automatically imports new screens into the navigation configuration file when generated.
+- Generates a corresponding style file for each new screen, imported with common code.
+- Allows generation of individual files, such as components, styles, and services as needed.
+- Saves developers time by creating new applications with a well-structured project setup.
+
+# What's New in the Latest Version
+- Added Facebook integration functionality with a single command. Easily set up Facebook integration for both Android and iOS platforms. No need to follow lengthy documentation—a demo example is generated in your project directory after running this command.
 
 ```sh
 rn-riyo setup-facebook your_facebook_app_id
@@ -22,69 +23,69 @@ rn-riyo setup-facebook your_facebook_app_id
 
 ### Installation
 
-RN RIYO CLI requires [Node.js](https://nodejs.org/) v8+ and [React Native](https://facebook.github.io/react-native/docs/getting-started) to run perfectly and aslo need `JDK` and `SDK`.
+RN RIYO CLI requires [Node.js](https://nodejs.org/) v8+, [React Native](https://facebook.github.io/react-native/docs/getting-started), `JDK`, and `SDK`.
 
-
-Install the CLI with the following command.
+Install the CLI with the following command:
 
 ```sh
 npm install -g rn-riyo
 ```
 
+### How to Use
 
-### How to use?
-If your system already have setup, then follow the below steps
+If your system is already set up, follow these steps:
 
-STEP-1
+**Step 1:**  
 ```sh
 react-native init myApp
-```
-STEP-2
+```  
+**Step 2:**  
 ```sh
 cd myApp
-```
-STEP-3
+```  
+**Step 3:**  
 ```sh
 rn-riyo g-structure tabbar
-```
-STEP-4
+```  
+**Step 4:**  
 ```sh
-react-native run-android or react-native run-ios
-```
+react-native run-android
+# or
+react-native run-ios
+```  
 
-### Some powerfull commands
+### Powerful Commands
 
-Generating new screen
+**Generate a new screen:**  
 ```sh
 rn-riyo g-screen homePage
-```
-Generating new style
+```  
+
+**Generate a new style:**  
 ```sh
 rn-riyo g-style homeStyle
-```
-Generating new component
+```  
+
+**Generate a new component:**  
 ```sh
 rn-riyo g-component myComponent
-```
-Generating keystore file
+```  
+
+**Generate a keystore file:**  
 ```sh
 rn-riyo g-keystore-file
-```
-### For more command usage:
+```  
+
+### For More Command Usage
 ```sh
 rn-riyo --help
-```
+```  
 
-Note: I am sorry to say you that there was a minor problem with version 1.0.0 to 1.0.4. If your are currently using oldest version, please uninstall it and re-install latest version again.
+**Note:** This will only work for class base component, will implement functional base later.
 
-In the latest version I have added a new functionality to display a message if new version is available of the CLI.
+**Let's chill, dude! Happy coding!**
 
+---
 
-**Lets chill dude, happy coding!**
-
-License
-----
-
+**License**  
 GNU GENERAL PUBLIC LICENSE
-
-
